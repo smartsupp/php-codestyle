@@ -1,0 +1,25 @@
+{
+    "name": "smartsupp/php-codestyle",
+    "type": "library",
+    "keywords": ["codestyle", "php", "nette"],
+    "authors": [{
+        "name": "Dušan Kmeť",
+        "email": "dkmorlok@gmail.com"
+    }],
+    "description" : "Custom code style for php and nette based projects.",
+    "version": "0.1.0",
+    "minimum-stability": "dev",
+    "license": "",
+    "require": {
+        "php": ">=5.4.0",
+        "squizlabs/php_codesniffer": "^2.7"
+    },
+    "autoload": {
+        "classmap": ["src/"]
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "0.1.x-dev"
+        }
+    }
+}

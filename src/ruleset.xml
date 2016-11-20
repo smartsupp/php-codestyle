@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ruleset name="Smartsupp">
+	<description>Smartsupp Coding Standards</description>
+
+	<rule ref="Smartsupp.Classes.ClassDeclaration"/>
+</ruleset>
