@@ -9,18 +9,18 @@ use PHP_CodeSniffer_File;
  * Rules (new to parent class):
  * - Opening brace for the %s should be followed by %s empty line(s).
  * - Closing brace for the %s should be preceded by %s empty line(s).
+ *
+ * Exceptions:
+ * - Opening brace can be followed with simple comment without new line.
+ * - Opening brace can be followed with constant or use without new line.
  */
 final class ClassDeclarationSniff extends PEAR_Sniffs_Classes_ClassDeclarationSniff
 {
 
-	/**
-	 * @var int
-	 */
+	/** @var int */
 	public $emptyLinesAfterOpeningBrace = 1;
 
-	/**
-	 * @var int
-	 */
+	/** @var int */
 	public $emptyLinesBeforeClosingBrace = 1;
 
 
@@ -30,8 +30,6 @@ final class ClassDeclarationSniff extends PEAR_Sniffs_Classes_ClassDeclarationSn
 	public function process(PHP_CodeSniffer_File $file, $position)
 	{
 		parent::process($file, $position);
-
-		// Fix type
 		$this->emptyLinesAfterOpeningBrace = (int) $this->emptyLinesAfterOpeningBrace;
 		$this->emptyLinesBeforeClosingBrace = (int) $this->emptyLinesBeforeClosingBrace;
 
@@ -44,8 +42,13 @@ final class ClassDeclarationSniff extends PEAR_Sniffs_Classes_ClassDeclarationSn
 	{
 		$tokens = $file->getTokens();
 		$openingBracePosition = $tokens[$position]['scope_opener'];
-		$emptyLinesCount = $this->getEmptyLinesAfterOpeningBrace($file, $openingBracePosition);
 
+		$nextToken = $this->getNextTokenAfterOpeningBrace($file, $openingBracePosition);
+		if ($nextToken['code'] === T_CONST || $nextToken['code'] === T_COMMENT || $nextToken['code'] === T_USE) {
+			return;
+		}
+
+		$emptyLinesCount = $this->getEmptyLinesAfterOpeningBrace($file, $openingBracePosition);
 		if ($emptyLinesCount !== $this->emptyLinesAfterOpeningBrace) {
 			$error = 'Opening brace for the %s should be followed by %s empty line(s); %s found.';
 			$data = [
@@ -76,11 +79,11 @@ final class ClassDeclarationSniff extends PEAR_Sniffs_Classes_ClassDeclarationSn
 	}
 
 
-	private function getEmptyLinesBeforeClosingBrace(PHP_CodeSniffer_File $file, $position)
+	private function getNextTokenAfterOpeningBrace(PHP_CodeSniffer_File $file, $position)
 	{
 		$tokens = $file->getTokens();
-		$prevContent = $file->findPrevious(T_WHITESPACE, ($position - 1), NULL, TRUE);
-		return $tokens[$position]['line'] - $tokens[$prevContent]['line'] - 1;
+		$nextContent = $file->findNext(T_WHITESPACE, ($position + 1), NULL, TRUE);
+		return $tokens[$nextContent];
 	}
 
 
@@ -89,6 +92,14 @@ final class ClassDeclarationSniff extends PEAR_Sniffs_Classes_ClassDeclarationSn
 		$tokens = $file->getTokens();
 		$nextContent = $file->findNext(T_WHITESPACE, ($position + 1), NULL, TRUE);
 		return $tokens[$nextContent]['line'] - $tokens[$position]['line'] - 1;
+	}
+
+
+	private function getEmptyLinesBeforeClosingBrace(PHP_CodeSniffer_File $file, $position)
+	{
+		$tokens = $file->getTokens();
+		$prevContent = $file->findPrevious(T_WHITESPACE, ($position - 1), NULL, TRUE);
+		return $tokens[$position]['line'] - $tokens[$prevContent]['line'] - 1;
 	}
 
 }

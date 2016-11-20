@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ruleset name="Smartsupp">
 	<description>Smartsupp Coding Standards</description>
-
-	<!-- classes -->
+	<!-- Classes -->
 	<rule ref="Smartsupp.Classes.ClassDeclaration"/>
+	<!-- WhiteSpace -->
+	<rule ref="Smartsupp.WhiteSpace.BetweenMethodSpacing"/>
 </ruleset>
