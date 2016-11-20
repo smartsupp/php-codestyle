@@ -2,5 +2,6 @@
 <ruleset name="Smartsupp">
 	<description>Smartsupp Coding Standards</description>
 
+	<!-- classes -->
 	<rule ref="Smartsupp.Classes.ClassDeclaration"/>
 </ruleset>
