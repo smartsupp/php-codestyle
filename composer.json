@@ -9,10 +9,10 @@
     "description" : "Custom code style for php and nette based projects.",
     "version": "0.1.0",
     "minimum-stability": "dev",
+    "prefer-stable": true,
     "license": "",
     "require": {
-        "php": ">=5.4.0",
-        "squizlabs/php_codesniffer": "^2.6"
+        "squizlabs/php_codesniffer": "^3.4"
     },
     "autoload": {
         "classmap": ["src/"]
