@@ -2,8 +2,8 @@
 
 namespace Smartsupp\Sniffs\Classes;
 
-use PEAR_Sniffs_Classes_ClassDeclarationSniff;
-use PHP_CodeSniffer_File;
+use PHP_CodeSniffer\Standards\PEAR\Sniffs\Classes\ClassDeclarationSniff as PEARClassDeclarationSniff;
+use PHP_CodeSniffer\Files\File;
 
 /**
  * Rules (new to parent class):
@@ -14,7 +14,7 @@ use PHP_CodeSniffer_File;
  * - Opening brace can be followed with simple comment without new line.
  * - Opening brace can be followed with constant or use without new line.
  */
-final class ClassDeclarationSniff extends PEAR_Sniffs_Classes_ClassDeclarationSniff
+final class ClassDeclarationSniff extends PEARClassDeclarationSniff
 {
 
 	/** @var int */
@@ -27,7 +27,7 @@ final class ClassDeclarationSniff extends PEAR_Sniffs_Classes_ClassDeclarationSn
 	/**
 	 * {@inheritdoc}
 	 */
-	public function process(PHP_CodeSniffer_File $file, $position)
+	public function process(File $file, $position)
 	{
 		parent::process($file, $position);
 		$this->emptyLinesAfterOpeningBrace = (int) $this->emptyLinesAfterOpeningBrace;
@@ -38,7 +38,7 @@ final class ClassDeclarationSniff extends PEAR_Sniffs_Classes_ClassDeclarationSn
 	}
 
 
-	private function processOpen(PHP_CodeSniffer_File $file, $position)
+	private function processOpen(File $file, $position)
 	{
 		$tokens = $file->getTokens();
 		$openingBracePosition = $tokens[$position]['scope_opener'];
@@ -61,7 +61,7 @@ final class ClassDeclarationSniff extends PEAR_Sniffs_Classes_ClassDeclarationSn
 	}
 
 
-	private function processClose(PHP_CodeSniffer_File $file, $position)
+	private function processClose(File $file, $position)
 	{
 		$tokens = $file->getTokens();
 		$closeBracePosition = $tokens[$position]['scope_closer'];
@@ -79,7 +79,7 @@ final class ClassDeclarationSniff extends PEAR_Sniffs_Classes_ClassDeclarationSn
 	}
 
 
-	private function getNextTokenAfterOpeningBrace(PHP_CodeSniffer_File $file, $position)
+	private function getNextTokenAfterOpeningBrace(File $file, $position)
 	{
 		$tokens = $file->getTokens();
 		$nextContent = $file->findNext(T_WHITESPACE, ($position + 1), NULL, TRUE);
@@ -87,7 +87,7 @@ final class ClassDeclarationSniff extends PEAR_Sniffs_Classes_ClassDeclarationSn
 	}
 
 
-	private function getEmptyLinesAfterOpeningBrace(PHP_CodeSniffer_File $file, $position)
+	private function getEmptyLinesAfterOpeningBrace(File $file, $position)
 	{
 		$tokens = $file->getTokens();
 		$nextContent = $file->findNext(T_WHITESPACE, ($position + 1), NULL, TRUE);
@@ -95,7 +95,7 @@ final class ClassDeclarationSniff extends PEAR_Sniffs_Classes_ClassDeclarationSn
 	}
 
 
-	private function getEmptyLinesBeforeClosingBrace(PHP_CodeSniffer_File $file, $position)
+	private function getEmptyLinesBeforeClosingBrace(File $file, $position)
 	{
 		$tokens = $file->getTokens();
 		$prevContent = $file->findPrevious(T_WHITESPACE, ($position - 1), NULL, TRUE);

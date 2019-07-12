@@ -2,8 +2,8 @@
 
 namespace Smartsupp\Sniffs\WhiteSpace;
 
-use PHP_CodeSniffer_File;
-use Squiz_Sniffs_WhiteSpace_FunctionSpacingSniff;
+use PHP_CodeSniffer\Standards\Squiz\Sniffs\WhiteSpace\FunctionSpacingSniff;
+use PHP_CodeSniffer\Files\File;
 
 /**
  * Rules:
@@ -14,7 +14,7 @@ use Squiz_Sniffs_WhiteSpace_FunctionSpacingSniff;
  * - Method is the last in the class, followed by close bracket.
  * - Method is used inside interface.
  */
-final class BetweenMethodSpacingSniff extends Squiz_Sniffs_WhiteSpace_FunctionSpacingSniff
+final class BetweenMethodSpacingSniff extends FunctionSpacingSniff
 {
 
 	/** @var int */
@@ -26,7 +26,7 @@ final class BetweenMethodSpacingSniff extends Squiz_Sniffs_WhiteSpace_FunctionSp
 	/** @var array */
 	private $tokens;
 
-	/** @var PHP_CodeSniffer_File */
+	/** @var File */
 	private $file;
 
 
@@ -42,7 +42,7 @@ final class BetweenMethodSpacingSniff extends Squiz_Sniffs_WhiteSpace_FunctionSp
 	/**
 	 * {@inheritdoc}
 	 */
-	public function process(PHP_CodeSniffer_File $file, $position)
+	public function process(File $file, $position)
 	{
 		// Fix type
 		$this->blankLinesBetweenMethods = (int) $this->blankLinesBetweenMethods;
