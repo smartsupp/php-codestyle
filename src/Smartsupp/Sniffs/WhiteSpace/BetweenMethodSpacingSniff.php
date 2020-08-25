@@ -54,18 +54,35 @@ final class BetweenMethodSpacingSniff extends FunctionSpacingSniff
 		if ($this->isFileInterface()) {
 			return;
 		}
-		$blankLinesCountAfterFunction = $this->getBlankLineCountAfterFunction();
+		[$blankLinesCountAfterFunction, $stackPtr] = $this->getBlankLineCountAfterFunction();
 		if ($blankLinesCountAfterFunction !== $this->blankLinesBetweenMethods) {
 			if (!$this->isLastMethod()) {
 				$error = 'Method should have %s empty line(s) after itself, %s found.';
 				$data = [$this->blankLinesBetweenMethods, $blankLinesCountAfterFunction];
-				$this->file->addError($error, $position, '', $data);
+				$shouldFix = $this->file->addFixableError($error, $position, '', $data);
+				if ($shouldFix) {
+					$file->fixer->beginChangeset();
+					if ($blankLinesCountAfterFunction > $this->blankLinesBetweenMethods) {
+						for ($i = 0; $i < $blankLinesCountAfterFunction - $this->blankLinesBetweenMethods; ++$i) {
+							$file->fixer->replaceToken($stackPtr, '');
+						}
+					} elseif ($blankLinesCountAfterFunction < $this->blankLinesBetweenMethods) {
+						for ($i = 0; $i < $this->blankLinesBetweenMethods - $blankLinesCountAfterFunction; ++$i) {
+							$file->fixer->addNewline($stackPtr);
+						}
+					}
+					$file->fixer->endChangeset();
+				}
 			}
 		}
 	}
 
 
-	private function getBlankLineCountAfterFunction()
+	/**
+	 * @return array{0: int, 1: int} Returns tuple [number of lines, last endline token position]
+	 * The last token position can be appended to if extra lines are missing, or removed if extra lines exist
+	 */
+	private function getBlankLineCountAfterFunction(): array
 	{
 		$closer = $this->getScopeCloser();
 		$nextLineToken = $this->getNextLineTokenByScopeCloser($closer);
@@ -79,7 +96,7 @@ final class BetweenMethodSpacingSniff extends FunctionSpacingSniff
 			$foundLines = $this->blankLinesBetweenMethods;
 		}
 
-		return $foundLines;
+		return [$foundLines, ($nextContent ?: $nextLineToken) - 2];
 	}
 
 

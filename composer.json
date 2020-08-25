@@ -7,19 +7,14 @@
         "email": "dkmorlok@gmail.com"
     }],
     "description" : "Custom code style for php and nette based projects.",
-    "version": "0.1.0",
     "minimum-stability": "dev",
     "prefer-stable": true,
     "license": "",
     "require": {
+        "php": "^7.4 || ^8.0",
         "squizlabs/php_codesniffer": "^3.4"
     },
     "autoload": {
         "classmap": ["src/"]
-    },
-    "extra": {
-        "branch-alias": {
-            "dev-master": "0.1.x-dev"
-        }
     }
 }

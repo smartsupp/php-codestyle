@@ -27,7 +27,7 @@ final class ClassDeclarationSniff extends PEARClassDeclarationSniff
 	/**
 	 * {@inheritdoc}
 	 */
-	public function process(File $file, $position)
+	public function process(File $file, $position): void
 	{
 		parent::process($file, $position);
 		$this->emptyLinesAfterOpeningBrace = (int) $this->emptyLinesAfterOpeningBrace;
@@ -38,7 +38,7 @@ final class ClassDeclarationSniff extends PEARClassDeclarationSniff
 	}
 
 
-	private function processOpen(File $file, $position)
+	private function processOpen(File $file, int $position): void
 	{
 		$tokens = $file->getTokens();
 		$openingBracePosition = $tokens[$position]['scope_opener'];
@@ -48,7 +48,7 @@ final class ClassDeclarationSniff extends PEARClassDeclarationSniff
 			return;
 		}
 
-		$emptyLinesCount = $this->getEmptyLinesAfterOpeningBrace($file, $openingBracePosition);
+		[$emptyLinesCount, $stackPtr] = $this->getEmptyLinesAfterOpeningBrace($file, $openingBracePosition);
 		if ($emptyLinesCount !== $this->emptyLinesAfterOpeningBrace) {
 			$error = 'Opening brace for the %s should be followed by %s empty line(s); %s found.';
 			$data = [
@@ -56,30 +56,58 @@ final class ClassDeclarationSniff extends PEARClassDeclarationSniff
 				$this->emptyLinesAfterOpeningBrace,
 				$emptyLinesCount,
 			];
-			$file->addError($error, $openingBracePosition, 'OpenBraceFollowedByEmptyLines', $data);
+			$shouldFix = $file->addFixableError($error, $openingBracePosition, 'OpenBraceFollowedByEmptyLines', $data);
+
+			if ($shouldFix) {
+				$file->fixer->beginChangeset();
+				if ($emptyLinesCount > $this->emptyLinesAfterOpeningBrace) {
+					for ($i = 0; $i < $emptyLinesCount - $this->emptyLinesAfterOpeningBrace; ++$i) {
+						$file->fixer->replaceToken($stackPtr, '');
+					}
+				} elseif ($emptyLinesCount < $this->emptyLinesAfterOpeningBrace) {
+					for ($i = 0; $i < $this->emptyLinesAfterOpeningBrace; ++$i) {
+						$file->fixer->addNewline($stackPtr);
+					}
+				}
+				$file->fixer->endChangeset();
+			}
 		}
 	}
 
 
-	private function processClose(File $file, $position)
+	private function processClose(File $file, int $position): void
 	{
 		$tokens = $file->getTokens();
 		$closeBracePosition = $tokens[$position]['scope_closer'];
-		$emptyLines = $this->getEmptyLinesBeforeClosingBrace($file, $closeBracePosition);
+		[$emptyLinesCount, $stackPtr] = $this->getEmptyLinesBeforeClosingBrace($file, $closeBracePosition);
 
-		if ($emptyLines !== $this->emptyLinesBeforeClosingBrace) {
+		if ($emptyLinesCount !== $this->emptyLinesBeforeClosingBrace) {
 			$error = 'Closing brace for the %s should be preceded by %s empty line(s); %s found.';
 			$data = [
 				$tokens[$position]['content'],
 				$this->emptyLinesBeforeClosingBrace,
-				$emptyLines
+				$emptyLinesCount
 			];
-			$file->addError($error, $closeBracePosition, 'CloseBracePrecededByEmptyLines', $data);
+			$shouldFix = $file->addFixableError($error, $closeBracePosition, 'CloseBracePrecededByEmptyLines', $data);
+
+			if ($shouldFix) {
+				$file->fixer->beginChangeset();
+				if ($emptyLinesCount > $this->emptyLinesBeforeClosingBrace) {
+					for ($i = 0; $i < $emptyLinesCount - $this->emptyLinesBeforeClosingBrace; ++$i) {
+						$file->fixer->replaceToken($stackPtr, '');
+					}
+				} elseif ($emptyLinesCount < $this->emptyLinesBeforeClosingBrace) {
+					for ($i = 0; $i < $this->emptyLinesBeforeClosingBrace - $emptyLinesCount; ++$i) {
+						$file->fixer->addNewline($stackPtr);
+					}
+				}
+				$file->fixer->endChangeset();
+			}
 		}
 	}
 
 
-	private function getNextTokenAfterOpeningBrace(File $file, $position)
+	private function getNextTokenAfterOpeningBrace(File $file, ?int $position): array
 	{
 		$tokens = $file->getTokens();
 		$nextContent = $file->findNext(T_WHITESPACE, ($position + 1), NULL, TRUE);
@@ -87,19 +115,29 @@ final class ClassDeclarationSniff extends PEARClassDeclarationSniff
 	}
 
 
-	private function getEmptyLinesAfterOpeningBrace(File $file, $position)
+	/**
+	 * @param File $file
+	 * @param int|null $position
+	 * @return array{0: int, 1: int} Returns tuple [number of newlines, position of last newline token]
+	 */
+	private function getEmptyLinesAfterOpeningBrace(File $file, ?int $position): array
 	{
 		$tokens = $file->getTokens();
 		$nextContent = $file->findNext(T_WHITESPACE, ($position + 1), NULL, TRUE);
-		return $tokens[$nextContent]['line'] - $tokens[$position]['line'] - 1;
+		return [$tokens[$nextContent]['line'] - $tokens[$position]['line'] - 1, $nextContent - 2];
 	}
 
 
-	private function getEmptyLinesBeforeClosingBrace(File $file, $position)
+	/**
+	 * @param File $file
+	 * @param int|null $position
+	 * @return array{0: int, 1: int} Returns tuple [number of newlines, position of last newline token]
+	 */
+	private function getEmptyLinesBeforeClosingBrace(File $file, ?int $position): array
 	{
 		$tokens = $file->getTokens();
 		$prevContent = $file->findPrevious(T_WHITESPACE, ($position - 1), NULL, TRUE);
-		return $tokens[$position]['line'] - $tokens[$prevContent]['line'] - 1;
+		return [$tokens[$position]['line'] - $tokens[$prevContent]['line'] - 1, $prevContent + 1];
 	}
 
 }
